@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天平台</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .chat-box { width: 80%; max-width: 600px; margin: auto; border: 1px solid #ccc; padding: 10px; }
+        .message { padding: 10px; margin: 5px 0; border-radius: 10px; max-width: 70%; border: none;}
+        .bot-message { text-align: left;border: none; }
+        .user-message { text-align: right; margin-left: auto;border: none; }
+        .input-box { margin-top: 10px; display: flex; gap: 5px; }
+        .input-box input { flex: 1; padding: 5px; }
+        .logout-container {
+            display: inline-block;
+            margin-left: 10000px; /* 調整這個數值來增加間距 */
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-box">
+        <h2>聊天室</h2>
+        <div id="messages">
+            {% for msg in messages %}
+                <div class="message {% if msg.username == 'bot' %}bot-message{% else %}user-message{% endif %}">
+                    <strong>{{ msg.username }}:</strong> {{ msg.content }}
+                </div>
+            {% endfor %}
+        </div>
+        <div class="input-box">
+            <input type="text" id="message" placeholder="輸入訊息">
+            <button onclick="sendMessage()">送出</button>
+        </div>
+    </div>
+
+    <script>
+        function sendMessage() {
+            let message = document.getElementById("message").value;
+            let messagesDiv = document.getElementById("messages");
+    
+            // 顯示使用者訊息
+            let userMessage = document.createElement("div");
+            userMessage.classList.add("message", "user-message");
+            userMessage.innerHTML = `</strong> ${message}`;
+            messagesDiv.appendChild(userMessage);
+    
+            fetch('/chat_api/', {  // Django 後端 API 路徑
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 顯示機器人回應
+                let botMessage = document.createElement("div");
+                botMessage.classList.add("message", "bot-message");
+                botMessage.innerHTML = `</strong> ${data.response}`;
+                messagesDiv.appendChild(botMessage);
+            })
+            .catch(error => console.error("Error:", error));
+    
+            document.getElementById("message").value = "";
+        }
+    </script>
+    <span class=".logout-container">
+        <a href="{% url 'login' %}">
+            <button>登出</button>
+        </a>
+    </span>
+</body>
+</html>

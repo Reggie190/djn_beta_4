@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登入</title>
+    <style>
+        /* 設定整個畫面的高度與置中對齊 */
+        body {
+            display: flex;
+            justify-content: center; /* 水平置中 */
+            align-items: center; /* 垂直置中 */
+            height: 100vh; /* 讓頁面占滿整個螢幕高度 */
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+
+        /* 設定登入表單的樣式 */
+        .login-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 300px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+        .register-link {
+            margin-top: 10px;
+            display: block;
+        }
+        .register-container {
+            display: inline-block;
+            margin-left: 100px; /* 調整這個數值來增加間距 */
+        }
+    </style>
+</head>
+<body>
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <label for="username">帳號：</label>
+        <input type="text" name="username" required><br>
+
+        <label for="password">密碼：</label>
+        <input type="password" name="password" required><br>
+
+        <button type="submit">登入</button>
+    </form>
+        <span class="register-container">
+            <a href="{% url 'register' %}">
+                <button>註冊</button>
+            </a>
+        </span>
+</body>
+</html>
