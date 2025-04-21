@@ -24,7 +24,8 @@ from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 import fitz  # PyMuPDF 
 import os
-
+import markdown2
+from django.utils.safestring import mark_safe
 
 from django.contrib.auth.forms import UserCreationForm
 
@@ -41,7 +42,14 @@ os.environ["GOOGLE_API_KEY"] = "AIzaSyDJ65fyG2WH9mDTT6hkwtNvE9EEWXFFBv4"
 @login_required(login_url='/login/')
 def chat_view(request):
     messages = Message.objects.all().order_by('timestamp')
-    return render(request, 'chat.html', {'messages': messages})
+    for msg in messages:
+        msg.rendered_content = mark_safe(
+            markdown2.markdown(
+                msg.content,
+                extras=["fenced-code-blocks", "strike", "tables"]
+            )
+        )
+    return render(request, 'chat.html', {'content': messages})
 
 # 📌 **處理用戶發送的訊息**
 @csrf_exempt

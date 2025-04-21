@@ -18,6 +18,19 @@
             margin-left: 10000px; /* 調整這個數值來增加間距 */
         }
     </style>
+    <script type="text/javascript" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <!-- marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- highlight.js for code syntax highlighting -->
+    <link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+
+    <!-- MathJax for LaTeX rendering -->
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
     <div class="chat-box">
@@ -25,43 +38,61 @@
         <div id="messages">
             {% for msg in messages %}
                 <div class="message {% if msg.username == 'bot' %}bot-message{% else %}user-message{% endif %}">
-                    <strong>{{ msg.username }}:</strong> {{ msg.content }}
+                    <strong>{{ msg.username }}:</strong>
+                    <div class="content">{{ msg.rendered_content|safe }}</div>
                 </div>
             {% endfor %}
         </div>
-        <div class="input-box">
-            <input type="text" id="message" placeholder="輸入訊息">
+        <div class="input-box" style="flex-direction: column;">
+            <textarea id="message" placeholder="輸入訊息 (支援 Markdown)" rows="4"
+                      style="width: 100%; padding: 8px;"></textarea>
+            <div id="preview" style="border: 1px solid #ccc; margin-top: 10px; padding: 10px; background: #f9f9f9;"></div>
             <button onclick="sendMessage()">送出</button>
         </div>
     </div>
 
     <script>
+        const textarea = document.getElementById("message");
+        const preview = document.getElementById("preview");
+    
+        textarea.addEventListener("input", () => {
+            const rawMarkdown = textarea.value;
+            const html = marked.parse(rawMarkdown);
+            preview.innerHTML = html;
+            hljs.highlightAll();  // code highlighter
+            if (window.MathJax) MathJax.typeset();  // LaTeX renderer
+        });
+    
         function sendMessage() {
-            let message = document.getElementById("message").value;
-            let messagesDiv = document.getElementById("messages");
+            const message = textarea.value;
+            const messagesDiv = document.getElementById("messages");
     
-            // 顯示使用者訊息
-            let userMessage = document.createElement("div");
+            // 渲染使用者訊息為 Markdown
+            const userMessage = document.createElement("div");
             userMessage.classList.add("message", "user-message");
-            userMessage.innerHTML = `</strong> ${message}`;
+            userMessage.innerHTML = marked.parse(message);
             messagesDiv.appendChild(userMessage);
+            hljs.highlightAll();
+            if (window.MathJax) MathJax.typeset();
     
-            fetch('/chat_api/', {  // Django 後端 API 路徑
+            fetch('/chat_api/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
                 body: JSON.stringify({ message: message })
             })
             .then(response => response.json())
             .then(data => {
-                // 顯示機器人回應
-                let botMessage = document.createElement("div");
+                const botMessage = document.createElement("div");
                 botMessage.classList.add("message", "bot-message");
-                botMessage.innerHTML = `</strong> ${data.response}`;
+                botMessage.innerHTML = marked.parse(data.response);
                 messagesDiv.appendChild(botMessage);
+                hljs.highlightAll();
+                if (window.MathJax) MathJax.typeset();
             })
             .catch(error => console.error("Error:", error));
     
-            document.getElementById("message").value = "";
+            textarea.value = "";
+            preview.innerHTML = "";
         }
     </script>
     <span class=".logout-container">
