@@ -1,33 +1,66 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>註冊</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            padding: 50px;
+        }
+        .register-form {
+            max-width: 400px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .register-form h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .register-form input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .register-form button {
+            width: 100%;
+            padding: 10px;
+            background: #007BFF;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .error-message {
+            color: red;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
-    <h2>註冊</h2>
-    
-    {% if messages %}
-        {% for message in messages %}
-            <p style="color: red;">{{ message }}</p>
-        {% endfor %}
-    {% endif %}
+    <div class="register-form">
+        <h2>註冊帳號</h2>
+        <form method="POST" action="/register/">
+            <!-- Django 中加上 {% csrf_token %} -->
+            {% csrf_token %}
+            <input type="text" name="username" placeholder="使用者名稱" required>
+            <input type="email" name="email" placeholder="電子郵件" required>
+            <input type="password" name="password1" placeholder="密碼" required>
+            <input type="password" name="password2" placeholder="確認密碼" required>
 
-    <form method="post">
-        {% csrf_token %}
-        <label for="username">使用者名稱：</label>
-        <input type="text" name="username" required><br>
+            <!-- 如果要顯示錯誤訊息 -->
+            {% if error_message %}
+                <p class="error-message">{{ error_message }}</p>
+            {% endif %}
 
-        <label for="password">密碼：</label>
-        <input type="password" name="password" required><br>
-
-        <label for="confirm_password">確認密碼：</label>
-        <input type="password" name="confirm_password" required><br>
-
-        <button type="submit">註冊</button>
-    </form>
-
-    <p>已經有帳號？<a href="{% url 'login' %}">登入</a></p>
+            <button type="submit">註冊</button>
+        </form>
+    </div>
 </body>
 </html>

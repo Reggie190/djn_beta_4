@@ -36,10 +36,9 @@ line_bot_api = LineBotApi(settings.LINE_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(settings.LINE_CHANNEL_SECRET)
 
 # 設置 Google API 金鑰
-os.environ["GOOGLE_API_KEY"] = "AIzaSyDJ65fyG2WH9mDTT6hkwtNvE9EEWXFFBv4"
+os.environ["GOOGLE_API_KEY"] = "AIzaSyAIpYdu1yFJvm-a6SRx7MeBP86HIaRG2xc"
 
 # 📌 **聊天頁面 (chat_view)**
-@login_required(login_url='/login/')
 def chat_view(request):
     messages = Message.objects.all().order_by('timestamp')
     for msg in messages:
@@ -143,24 +142,24 @@ def login_view(request):
     return render(request, 'login.html')
 
 # 登出功能
-def logout_view(request):
+###def logout_view(request):
     logout(request)
-    return redirect('/login/')
-
+    return redirect(' ')
+###
 def register_view(request):
-    if request.method == "POST":
-        username = request.POST["username"]
-        password = request.POST["password"]
-        confirm_password = request.POST["confirm_password"]
-        if password != confirm_password:
-            messages.error(request, "密碼不一致！")
-            return redirect("register")
+    if request.method == 'POST':
+        username = request.POST['username']
+        email = request.POST['email']
+        password1 = request.POST['password1']
+        password2 = request.POST['password2']
 
-        if User.objects.filter(username=username).exists():
-            messages.error(request, "使用者名稱已存在！")
-            return redirect("register")
-        # 創建用戶
-        user = User.objects.create_user(username=username, password=password)
+        if password1 != password2:
+            return render(request, 'register.html', {'error_message': '密碼不一致'})
+
+        # 建立使用者帳號
+        user = User.objects.create_user(username=username, email=email, password=password1)
         user.save()
-        messages.success(request, "註冊成功！")
-    return render(request, "register.html")
+
+        return redirect('login')  # 或跳轉到首頁等等
+
+    return render(request, 'register.html')

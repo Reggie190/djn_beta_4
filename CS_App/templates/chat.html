@@ -1,126 +1,324 @@
+<!-- templates/chat.html -->
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>聊天平台</title>
-
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- highlight.js -->
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-
-    <!-- marked.js for Markdown rendering -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-    <!-- MathJax -->
-    <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
     <style>
-        .message {
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+        }
+        .chat-box {
+            width: 80%;
+            margin: 20px auto;
+            background: white;
             padding: 10px;
-            margin: 5px 0;
             border-radius: 10px;
-            max-width: 75%;
         }
 
-        .bot-message {
-            background-color: #f1f1f1;
-            text-align: left;
+        .message {
+            margin: 10px 0;
+            padding: 8px;
+            border-radius: 10px;
+            max-width: 70%;
         }
 
         .user-message {
-            background-color: #d1e7dd;
+            background: #d1e7dd;
             text-align: right;
             margin-left: auto;
         }
 
-        #preview {
-            border: 1px solid #ccc;
-            background-color: #f9f9f9;
+        .bot-message {
+            background: #f8d7da;
+            text-align: left;
         }
+
+        .input-area {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #f4f4f4;
+            padding: 10px;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+        }
+    
+        .input-container {
+            display: flex;
+            width: 80%;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+    
+        .input-container input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+        }
+    
+        .input-container button {
+            padding: 10px 20px;
+            border: none;
+            background-color: coral;
+            color: white;
+            cursor: pointer;
+        }
+    
+        body {
+            margin: 0;
+            padding-bottom: 80px; /* 避免被底部輸入框遮住 */
+        }
+    
+        .chat-box {
+            margin-bottom: 100px; /* 保留底部空間讓輸入框顯示 */
+        }
+        .sidebar {
+            position: fixed;
+            top: 50px;
+            left: -350px; /* 初始隱藏 */
+            width: 250px;
+            height: 100%;
+            background-color: #e0f7fa;
+            transition: left 0.3s ease;
+            padding: 20px 10px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            z-index: 998;
+        }
+        
+        .sidebar.show {
+            left: 0;
+        }
+        
+        .profile {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .avatar {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        
+        .menu-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            color: white;
+            text-align: center;
+            cursor: pointer;
+        }
+        .login-section {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .login-section input {
+            margin-bottom: 10px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        
+        .login-section button {
+            padding: 8px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .account-box {
+            background-color: #f5f5f5;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+          }
+          
+          .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 12px;
+          }
+          
+          .user-info .avatar {
+            font-size: 48px;
+            margin-bottom: 8px;
+          }
+          
+          .welcome-text {
+            font-size: 16px;
+            color: #333;
+          }
     </style>
+    <!-- 引入 marked.js 解析 Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- 引入 MathJax 支援 LaTeX -->
+    <script>
+    window.MathJax = {
+        tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+        svg: { fontCache: 'global' }
+    };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
 </head>
 <body>
-    <div class="container py-5">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h3 class="mb-0">聊天室</h3>
+    <div class="menu-icon">
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+    <div style="margin-top: 60px;">  <!-- 避開 top-bar -->
+    <div class="chat-box" id="messages">
+        {% for msg in messages %}
+            <div class="message {% if msg.username == 'bot' %}bot-message{% else %}user-message{% endif %}">
+                <strong>{{ msg.username }}:</strong> {{ msg.content }}
             </div>
-            <div class="card-body" id="messages">
-                {% for msg in messages %}
-                    <div class="message {% if msg.username == 'bot' %}bot-message{% else %}user-message{% endif %}">
-                        <strong>{{ msg.username }}:</strong>
-                        <div class="content">{{ msg.rendered_content|safe }}</div>
-                    </div>
-                {% endfor %}
-            </div>
-            <div class="card-footer">
-                <div class="mb-3">
-                    <textarea id="message" class="form-control" rows="4" placeholder="輸入訊息 (支援 Markdown)"></textarea>
-                </div>
-                <div id="preview" class="p-2 mb-3"></div>
-                <div class="d-flex justify-content-between">
-                    <a href="{% url 'login' %}">
-                        <button class="btn btn-outline-danger">登出</button>
-                    </a>
-                    <button class="btn btn-success" onclick="sendMessage()">送出</button>
-                </div>
-            </div>
+        {% endfor %}
+    </div>
+    </div>
+    <div class="input-area">
+        <div class="input-container">
+            <input type="text" id="message" placeholder="輸入訊息">
+            <button onclick="sendMessage()">送出</button>
         </div>
     </div>
+    <!-- 漢堡 icon -->
+    <div id="top-bar" style="position: fixed; top: 0; left: 0; width: 100%; height: 50px; background: white; display: flex; align-items: center; padding: 5px 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 999;">
+        <!-- 綠色漢堡按鈕 -->
+        <div id="hamburger-menu" onclick="toggleMenu()"
+            style="width: 40px; height: 40px; background-color: #4CAF50; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; border-radius: 4px;">
+            <div style="width: 70%; height: 3px; background: white; margin: 3px 0;"></div>
+            <div style="width: 70%; height: 3px; background: white; margin: 3px 0;"></div>
+            <div style="width: 70%; height: 3px; background: white; margin: 3px 0;"></div>
+        </div>
+    </div>
+    <!-- 側邊欄 -->
+    <div id="sidebar" class="sidebar">
+        <div id="account-box" class="account-box">
+            {% if user.is_authenticated %}
+              <div class="user-info">
+                <div class="avatar">👤</div>
+                <div class="welcome-text">歡迎，<strong>{{ user.username }}</strong></div>
+              </div>
+              <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger w-100 mt-2">登出</button>
+              </form>
+            {% else %}
+              <div class="user-info">
+                <div class="avatar">👤</div>
+                <div class="welcome-text">訪客您好</div>
+              </div>
+              <a href="{% url 'login' %}" class="btn btn-primary w-100 mb-2">登入</a>
+              <a href="{% url 'register' %}" class="btn btn-secondary w-100">註冊</a>
+            {% endif %}
+        </div>
+          
 
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Spinner-style 選單 -->
+        <div class="w3-margin">
+            <select id="redSelect" class="w3-select w3-border w3-round-xlarge" onchange="handleRedSelect(this.value)">
+            <option value="" disabled selected>請選擇一個功能</option>
+            <option value="Function0">功能 1</option>
+            <option value="Function1">功能 2</option>
+            <option value="Function2">功能 3</option>
+            </select>
+        </div>
+  
+        <div class="menu-item" style="background-color: #a2e8a2;" onclick="quickSend('1+1=?')">1+1=？</div>
+        <div class="menu-item" style="background-color: #a2e8a2;" onclick="quickSend('What time is it')">問時間</div> 
+        <div class="menu-item" style="background-color: #c2f8c2;" onclick="quickSend('Search some file.')">稍等，我幫你查詢資料</div>
+    </div>
 
+    </div>
+    
     <script>
-        const textarea = document.getElementById("message");
-        const preview = document.getElementById("preview");
-
-        textarea.addEventListener("input", () => {
-            const rawMarkdown = textarea.value;
-            const html = marked.parse(rawMarkdown);
-            preview.innerHTML = html;
-            hljs.highlightAll();
-            if (window.MathJax) MathJax.typeset();
-        });
-
         function sendMessage() {
-            const message = textarea.value;
-            const messagesDiv = document.getElementById("messages");
-
-            const userMessage = document.createElement("div");
+            let message = document.getElementById("message").value;
+            let messagesDiv = document.getElementById("messages");
+        
+            // 使用 marked 解析 markdown
+            let userHtml = marked.parse(message);
+            let userMessage = document.createElement("div");
             userMessage.classList.add("message", "user-message");
-            userMessage.innerHTML = marked.parse(message);
+            userMessage.innerHTML = `<strong>你:</strong> ${userHtml}`;
             messagesDiv.appendChild(userMessage);
-            hljs.highlightAll();
-            if (window.MathJax) MathJax.typeset();
-
+        
             fetch('/chat_api/', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
                 body: JSON.stringify({ message: message })
             })
             .then(response => response.json())
             .then(data => {
-                const botMessage = document.createElement("div");
+                let botHtml = marked.parse(data.response);
+                let botMessage = document.createElement("div");
                 botMessage.classList.add("message", "bot-message");
-                botMessage.innerHTML = marked.parse(data.response);
+                botMessage.innerHTML = `<strong>bot:</strong> ${botHtml}`;
                 messagesDiv.appendChild(botMessage);
-                hljs.highlightAll();
-                if (window.MathJax) MathJax.typeset();
+        
+                // LaTeX 渲染
+                if (window.MathJax) {
+                    MathJax.typesetPromise([botMessage]);
+                }
             })
             .catch(error => console.error("Error:", error));
-
-            textarea.value = "";
-            preview.innerHTML = "";
+        
+            document.getElementById("message").value = "";
+        
+            // 滾到底部
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        
+            // 渲染使用者的 LaTeX
+            if (window.MathJax) {
+                MathJax.typesetPromise([userMessage]);
+            }
         }
+        function toggleMenu() {
+            const sidebar = document.getElementById("sidebar");
+            sidebar.classList.toggle("show");
+        }
+        function quickSend(text) {
+            const input = document.getElementById("message");
+            input.value = text;
+            sendMessage();  // 使用既有的送出函式
+        }
+        function handleRedSelect(value) {
+            if (value === "Function0") {
+                Function0();
+            } else if (value === "Function1") {
+                Function1();
+            } else if (value === "Function2") {
+                Function2();
+            }
+          }
+        
+          // 範例函式（請用你的原本的功能取代）
+          function Function0() {
+            alert("功能 1 被選擇");
+          }
+        
+          function Function1() {
+            alert("功能 2 被選擇");
+          }
+        
+          function Function2() {
+            alert("功能 3 被選擇");
+          }
     </script>
 </body>
 </html>
